@@ -1,0 +1,83 @@
+---
+title: "Country"
+author: "Purity"
+date: "16/03/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Analysis of the Country data retrieved from the db
+
+```{r cars}
+head(data2,6)
+```
+
+## check the structure of the data
+
+
+```{r pressure, echo=FALSE}
+str(data2)
+```
+```{r}
+#check how many continents were recorded
+data2%>%
+  count(Continent )
+```
+** All the seven continents were involved **
+```{r}
+#check the population per continent
+data2%>%
+  group_by(Continent)%>%
+  mean(Population,na.rm = FALSE)
+  
+  
+```
+```{r}
+data2%>%
+  group_by(Continent)%>%
+  summarise(sum = sum(Population),n = n())%>%
+  arrange(desc(sum))
+```
+** Asia has the largest number of people in the world
+```{r}
+# check the continent with the best life expectancy
+data2%>%
+  group_by(Continent)%>%
+  summarise(sum = sum(LifeExpectancy),n = n())%>%
+  arrange(desc(sum))
+
+```
+```{r}
+ggplot(data2 , mapping = aes(x = Continent, y = LifeExpectancy))+
+  geom_col()
+```
+** it seems we have missing values 
+```{r}
+sum(is.na(data2$LifeExpectancy))
+```
+```{r}
+
+dates <- as.character(data2$IndepYear)
+data2$IndepYear= as.Date(dates, format="%Y")
+str(data2)
+
+```
+```{r}
+ggplot(data2, mapping = aes(x = IndepYear,y = LifeExpectancy))+
+  geom_line()
+```
+```{r}
+ggplot(data2, mapping = aes(y = GNP, x = Continent))+
+  geom_col()+
+  coord_flip()
+```
+```{r}
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
