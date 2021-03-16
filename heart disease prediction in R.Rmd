@@ -1,0 +1,126 @@
+---
+title: "heart"
+author: "Purity"
+date: "15/02/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+data<-read.csv("heart-disease.csv")
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+head(data)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+tail(data)
+```
+```{r}
+dim(data)
+```
+
+```{r}
+str(data)
+```
+```{r}
+data$sex<-as.factor(data$sex)
+```
+
+```{r}
+data$target<-as.factor(data$target)
+str(data)
+
+```
+
+
+```{r}
+library(tidyverse)
+glimpse(data)
+```
+```{r}
+library(caret)
+
+set.seed(107)
+inTrain <- createDataPartition(
+  y = data$target,
+  ## the outcome data are needed
+  p = .75,
+  ## The percentage of data in the
+  ## training set
+  list = FALSE
+)
+## The format of the results
+
+## The output is a set of integers for the rows of Sonar
+## that belong in the training set.
+str(inTrain)
+```
+```{r}
+training <- data[ inTrain,]
+testing  <- data[-inTrain,]
+
+nrow(training)
+#> [1] 157
+nrow(testing)
+```
+
+```{r}
+plsFit <- train(
+  target ~ .,
+  data = training,
+  method = "pls",
+  ## Center and scale the predictors for the training
+  ## set and all future samples.
+  preProc = c("center", "scale")
+)
+```
+
+```{r}
+ctrl <- trainControl(method = "repeatedcv", repeats = 3)
+
+plsFit <- train(
+  target ~ .,
+  data = training,
+  method = "pls",
+  preProc = c("center", "scale"),
+  tuneLength = 15,
+  ## added:
+  trControl = ctrl,
+  metric = "AUC"
+)
+```
+```{r}
+plsFit
+```
+
+```{r}
+ggplot(plsFit)
+```
+```{r}
+plsClasses <- predict(plsFit, newdata = testing)
+str(plsClasses)
+```
+```{r}
+plsProbs <- predict(plsFit, newdata = testing, type = "prob")
+head(plsProbs)
+```
+```{r}
+confusionMatrix(data = plsClasses, testing$target)
+```
+
